@@ -1,6 +1,7 @@
 import { Outlet, Link } from 'react-router-dom';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import { ArrowLeft } from 'lucide-react';
+import logo from '../assets/isiro_logo_fav.png';
 
 const AuthLayout = () => {
   return (
@@ -19,9 +20,7 @@ const AuthLayout = () => {
 
       <div className="w-full max-w-md app-card p-8">
         <div className="flex justify-center mb-8">
-           <div className="w-14 h-14 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold text-2xl shadow-sm">
-             i
-           </div>
+           <img src={logo} alt="Isiro Logo" className="w-14 h-14 object-contain" />
         </div>
         <Outlet />
       </div>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Bot, MessageCircle, BarChart3, ShieldCheck } from 'lucide-react';
 import ThemeToggle from '../components/ui/ThemeToggle';
+import logo from '../assets/isiro_logo_fav.png';
 
 const LandingPage = () => {
   return (
@@ -9,7 +10,7 @@ const LandingPage = () => {
       {/* Navigation */}
       <nav className="h-20 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-6 lg:px-12 bg-white/50 dark:bg-zinc-950/50 backdrop-blur-md fixed w-full z-50">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white font-bold shadow-sm">i</div>
+          <img src={logo} alt="Isiro Logo" className="w-8 h-8 object-contain" />
           <span className="text-xl font-bold tracking-tight">Isiro</span>
         </div>
         <div className="flex items-center gap-6">

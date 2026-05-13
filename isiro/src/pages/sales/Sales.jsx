@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Search, Filter, Download, Receipt, ExternalLink } from 'lucide-react';
+import { Search, Filter, Download, Receipt, ExternalLink, Plus } from 'lucide-react';
 import { motion } from 'framer-motion';
+import RecordSaleModal from './components/RecordSaleModal';
 
 const initialSales = [
   { id: 'SL-1029', date: '2026-05-10', customer: 'Oluwaseun Adebayo', items: 'Nike Dunk Panda (x2)', total: 170000, status: 'Completed', paymentMethod: 'Transfer (GTBank)' },
@@ -22,7 +23,12 @@ const itemVariants = {
 };
 
 const Sales = () => {
-  const [sales] = useState(initialSales);
+  const [sales, setSales] = useState(initialSales);
+  const [isRecordModalOpen, setIsRecordModalOpen] = useState(false);
+
+  const handleRecordSale = (newSale) => {
+    setSales([newSale, ...sales]);
+  };
 
   return (
     <div className="space-y-8 pb-10">
@@ -34,6 +40,12 @@ const Sales = () => {
         <div className="flex items-center gap-3">
           <button className="px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 shadow-sm">
             <Download size={16} /> Export CSV
+          </button>
+          <button 
+            onClick={() => setIsRecordModalOpen(true)}
+            className="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white rounded-xl text-sm font-medium shadow-sm transition-all flex items-center justify-center gap-2"
+          >
+            <Plus size={16} /> Record Sale
           </button>
         </div>
       </div>
@@ -106,6 +118,12 @@ const Sales = () => {
           </table>
         </div>
       </div>
+
+      <RecordSaleModal 
+        isOpen={isRecordModalOpen} 
+        onClose={() => setIsRecordModalOpen(false)} 
+        onRecordSale={handleRecordSale} 
+      />
     </div>
   );
 };

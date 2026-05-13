@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Plus, Copy, Check, Building2, MoreHorizontal, ArrowUpRight, Lock } from 'lucide-react';
+import { Plus, Copy, Check, Building2, MoreHorizontal, ArrowUpRight, Lock, Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 import CreateAccountModal from './components/CreateAccountModal';
 import WithdrawModal from './components/WithdrawModal';
 import SetPinModal from './components/SetPinModal';
+import UpdateAccountModal from './components/UpdateAccountModal';
 
 const initialAccounts = [
   { id: 'VA-001', name: 'Main Storefront', bank: 'Wema Bank', accountNumber: '0123456789', balance: 425000, status: 'Active' },
@@ -13,13 +14,26 @@ const initialAccounts = [
 ];
 
 const VirtualAccounts = () => {
-  const [accounts] = useState(initialAccounts);
+  const [accounts, setAccounts] = useState(initialAccounts);
   const [copiedId, setCopiedId] = useState(null);
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedWithdrawAccount, setSelectedWithdrawAccount] = useState(null);
   const [selectedPinAccount, setSelectedPinAccount] = useState(null);
+  const [selectedEditAccount, setSelectedEditAccount] = useState(null);
+
+  const handleDelete = (id) => {
+    if (window.confirm("Are you sure you want to delete this virtual account?")) {
+      setAccounts(accounts.filter(acc => acc.id !== id));
+      toast.success("Account deleted successfully");
+    }
+  };
+
+  const handleUpdateAccount = (updatedAccount) => {
+    setAccounts(accounts.map(acc => acc.id === updatedAccount.id ? updatedAccount : acc));
+  };
 
   const handleCopy = (text, id) => {
     navigator.clipboard.writeText(text);
@@ -52,10 +66,35 @@ const VirtualAccounts = () => {
             transition={{ delay: index * 0.1 }}
             className="app-card p-6 relative overflow-hidden group hover:border-emerald-500/30 transition-colors flex flex-col"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-               <button className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800">
+            <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+               <button 
+                 onClick={() => setOpenDropdownId(openDropdownId === account.id ? null : account.id)}
+                 className="p-1.5 text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800"
+               >
                  <MoreHorizontal size={18} />
                </button>
+               {openDropdownId === account.id && (
+                 <div className="absolute right-4 top-12 w-48 bg-white dark:bg-zinc-900 rounded-xl shadow-lg border border-zinc-200 dark:border-zinc-800 py-1 z-20">
+                   <button 
+                     onClick={() => {
+                       setSelectedEditAccount(account);
+                       setOpenDropdownId(null);
+                     }}
+                     className="w-full text-left px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center gap-2"
+                   >
+                     <Edit2 size={14} /> Edit Account
+                   </button>
+                   <button 
+                     onClick={() => {
+                       handleDelete(account.id);
+                       setOpenDropdownId(null);
+                     }}
+                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2"
+                   >
+                     <Trash2 size={14} /> Delete Account
+                   </button>
+                 </div>
+               )}
             </div>
             
             <div className="flex items-center gap-4 mb-6">
@@ -143,6 +182,12 @@ const VirtualAccounts = () => {
         isOpen={!!selectedPinAccount} 
         onClose={() => setSelectedPinAccount(null)} 
         accountId={selectedPinAccount?.id} 
+      />
+      <UpdateAccountModal 
+        isOpen={!!selectedEditAccount} 
+        onClose={() => setSelectedEditAccount(null)} 
+        account={selectedEditAccount} 
+        onUpdate={handleUpdateAccount}
       />
     </div>
   );

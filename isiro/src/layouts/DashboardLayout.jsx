@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import { LayoutDashboard, Package, ListRestart, BellRing, PieChart, Activity, Menu, X, Receipt, Wallet } from 'lucide-react';
+import logo from '../assets/isiro_logo_fav.png';
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,7 +32,7 @@ const DashboardLayout = () => {
       <aside className={`fixed md:sticky top-0 left-0 h-screen w-64 app-sidebar p-4 flex flex-col gap-6 z-50 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="flex items-center justify-between px-2 py-2">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center text-white font-bold text-xl shadow-sm">i</div>
+            <img src={logo} alt="Isiro Logo" className="w-10 h-10 object-contain" />
             <span className="text-2xl font-bold tracking-tight">Isiro</span>
           </div>
           <button className="md:hidden text-zinc-500 hover:text-zinc-900 dark:hover:text-white" onClick={() => setIsMobileMenuOpen(false)}>
