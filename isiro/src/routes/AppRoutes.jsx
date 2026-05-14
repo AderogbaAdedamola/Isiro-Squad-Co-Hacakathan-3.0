@@ -12,6 +12,8 @@ import Transactions from '../pages/transactions/Transactions';
 import Sales from '../pages/sales/Sales';
 import VirtualAccounts from '../pages/accounts/VirtualAccounts';
 import PendingQueue from '../pages/pending/PendingQueue';
+import Notifications from '../pages/notifications/Notifications';
+import Settings from '../pages/settings/Settings';
 
 // Placeholders for remaining Dashboard Pages
 const Analytics = () => <div className=""><h1 className="text-3xl font-bold dark:text-white">Business Analytics</h1><p className="mt-4 text-zinc-500">Financial insights and credit identity.</p></div>;
@@ -36,6 +38,8 @@ const AppRoutes = () => {
         <Route path="accounts" element={<VirtualAccounts />} />
         <Route path="pending" element={<PendingQueue />} />
         <Route path="analytics" element={<Analytics />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="settings" element={<Settings />} />
       </Route>
     </Routes>
   );

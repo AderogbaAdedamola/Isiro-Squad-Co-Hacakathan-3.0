@@ -16,6 +16,7 @@ const DashboardLayout = () => {
     { name: 'Sales History', path: '/dashboard/sales', icon: <Receipt size={20} /> },
     { name: 'Virtual Accounts', path: '/dashboard/accounts', icon: <Wallet size={20} /> },
     { name: 'Pending Queue', path: '/dashboard/pending', icon: <BellRing size={20} /> },
+    { name: 'Settings', path: '/dashboard/settings', icon: <PieChart size={20} /> },
   ];
 
   return (
@@ -64,15 +65,15 @@ const DashboardLayout = () => {
           <ThemeToggle />
           
           {/* User Profile Snippet */}
-          <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
+          <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-sm">
-              DT
+              A
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">Demo Trader</p>
+              <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">Adedamola</p>
               <p className="text-xs text-zinc-500 truncate">Free Plan</p>
             </div>
-          </div>
+          </Link>
         </div>
       </aside>
 
@@ -102,10 +103,10 @@ const DashboardLayout = () => {
              </div>
 
              {/* Notification Bell */}
-             <div className="relative w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-600 dark:text-zinc-400 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
+             <Link to="/dashboard/notifications" className="relative w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-600 dark:text-zinc-400 cursor-pointer hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700">
                <BellRing size={20} />
                <div className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white dark:ring-zinc-950"></div>
-             </div>
+             </Link>
            </div>
         </header>
 

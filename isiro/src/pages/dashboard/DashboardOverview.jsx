@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
-import { ArrowUpRight, ArrowDownRight, Package, RefreshCw, Zap, TrendingUp, AlertTriangle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '../../store/authStore';
+import WhatsappVerificationModal from './components/WhatsappVerificationModal';
+import { ArrowUpRight, ArrowDownRight, Package, RefreshCw, Zap, TrendingUp, AlertTriangle, MessageCircle, ArrowRight } from 'lucide-react';
 
 const revenueData = [
   { name: 'Mon', total: 45000 },
@@ -26,8 +29,45 @@ const recentTransactions = [
 ];
 
 const DashboardOverview = () => {
+  const { isWhatsappVerified } = useAuthStore();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="space-y-6">
+      <AnimatePresence>
+        {!isWhatsappVerified && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white shrink-0">
+                  <MessageCircle size={20} />
+                </div>
+                <div>
+                  <h4 className="font-bold text-zinc-900 dark:text-white">Verify your WhatsApp</h4>
+                  <p className="text-sm text-zinc-500">Stay updated on your store's performance via WhatsApp alerts.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/20 whitespace-nowrap"
+              >
+                Verify Now <ArrowRight size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <WhatsappVerificationModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+      />
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Dashboard Overview</h1>
