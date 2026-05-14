@@ -30,7 +30,7 @@ const DashboardLayout = () => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed md:sticky top-0 left-0 h-screen w-64 app-sidebar p-4 flex flex-col gap-6 z-50 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <aside className={`fixed md:sticky top-0 left-0 h-screen w-64 app-sidebar p-4 flex flex-col gap-4 z-50 transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
         <div className="flex items-center justify-between px-2 py-2">
           <div className="flex items-center gap-3">
             <img src={logo} alt="Isiro Logo" className="w-10 h-10 object-contain" />
@@ -42,7 +42,6 @@ const DashboardLayout = () => {
         </div>
         
         <nav className="flex flex-col gap-1 flex-grow mt-4">
-          <p className="text-xs font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2 px-4">Menu</p>
           {navItems.map((item) => {
             const active = item.exact ? location.pathname === item.path : isActive(item.path);
             return (
@@ -71,7 +70,10 @@ const DashboardLayout = () => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">Adedamola</p>
-              <p className="text-xs text-zinc-500 truncate">Free Plan</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Credit Score: <span className="text-emerald-600 dark:text-emerald-400">748</span></p>
+              </div>
             </div>
           </Link>
         </div>

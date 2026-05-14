@@ -14,9 +14,7 @@ import VirtualAccounts from '../pages/accounts/VirtualAccounts';
 import PendingQueue from '../pages/pending/PendingQueue';
 import Notifications from '../pages/notifications/Notifications';
 import Settings from '../pages/settings/Settings';
-
-// Placeholders for remaining Dashboard Pages
-const Analytics = () => <div className=""><h1 className="text-3xl font-bold dark:text-white">Business Analytics</h1><p className="mt-4 text-zinc-500">Financial insights and credit identity.</p></div>;
+import Analytics from '../pages/analytics/Analytics';
 
 const AppRoutes = () => {
   return (

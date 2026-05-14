@@ -23,9 +23,8 @@ const Settings = () => {
       ]
     },
     {
-      title: 'Business & Billing',
+      title: 'Business Settings',
       items: [
-        { name: 'Plan & Subscription', icon: <CreditCard size={20} />, description: 'Current plan: Free (Upgradable)' },
         { name: 'Business Details', icon: <User size={20} />, description: 'Edit your business name and category' },
       ]
     }

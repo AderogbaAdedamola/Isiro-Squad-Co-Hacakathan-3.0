@@ -675,36 +675,64 @@ const Register = () => {
           >
             <div className="space-y-4">
               <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500">
-                <CheckCircle2 size={48} />
+                <MessageCircle size={48} />
               </div>
-              <h2 className="text-4xl font-extrabold tracking-tight">Almost There!</h2>
+              <h2 className="text-4xl font-extrabold tracking-tight">WhatsApp Verification</h2>
               <p className="text-xl text-zinc-500 dark:text-zinc-400">
-                To complete your verification, connect with our onboarding agent on WhatsApp.
+                Final step! Verify your WhatsApp to receive real-time business alerts.
               </p>
             </div>
 
-            <div className="app-card p-8 border-emerald-500/30 bg-emerald-500/5">
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
-                Clicking the button below will open WhatsApp with a pre-filled message to our verification team.
-              </p>
-              <a 
-                href="https://wa.me/2348000000000?text=Hi Isiro, I'm verifying my business account."
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/20 transition-all active:scale-95"
-              >
-                <MessageCircle size={24} /> Verify via WhatsApp
-              </a>
+            <div className="app-card p-8 space-y-6">
+              {!watch('whatsappCodeSent') ? (
+                <div className="space-y-4">
+                  <div className="relative">
+                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                    <input 
+                      {...register('whatsappNumber', { required: 'WhatsApp number is required' })}
+                      type="tel"
+                      className="app-input pl-12"
+                      placeholder="WhatsApp Number (e.g. +234...)"
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setValue('whatsappCodeSent', true)}
+                    className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    Send Verification Code <ArrowRight size={20} />
+                  </button>
+                </div>
+              ) : (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
+                >
+                  <p className="text-sm text-zinc-500">Enter the 6-digit code sent to <span className="font-bold">{watch('whatsappNumber')}</span></p>
+                  <input 
+                    {...register('whatsappOtp', { required: true, minLength: 6 })}
+                    type="text"
+                    maxLength="6"
+                    className="w-full text-center text-3xl font-bold tracking-[1rem] py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                    placeholder="000000"
+                  />
+                  <button 
+                    onClick={() => onSubmit(currentValues)}
+                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-lg transition-all"
+                  >
+                    Complete Registration
+                  </button>
+                  <button 
+                    onClick={() => setValue('whatsappCodeSent', false)}
+                    className="text-emerald-500 text-sm font-medium hover:underline"
+                  >
+                    Change Number
+                  </button>
+                </motion.div>
+              )}
             </div>
 
             <div className="pt-4 flex flex-col gap-4">
-              <button 
-                onClick={() => onSubmit(currentValues)}
-                disabled={isLoading}
-                className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline transition-all flex items-center justify-center gap-2"
-              >
-                {isLoading ? <Loader2 className="animate-spin" /> : 'Go to Dashboard'}
-              </button>
               <button onClick={prevStep} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-sm flex items-center justify-center gap-1">
                 <ArrowLeft size={14} /> Back to details
               </button>
