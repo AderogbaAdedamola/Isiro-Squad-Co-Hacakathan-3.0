@@ -9,8 +9,6 @@ import { useAuthStore } from '../../store/authStore';
 const Register = () => {
   const [step, setStep] = useState(1);
   const [subStep, setSubStep] = useState(1); // For Step 3 sub-navigation
-  const [isBvnVerifying, setIsBvnVerifying] = useState(false);
-  const [isBvnVerified, setIsBvnVerified] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const loginStore = useAuthStore(state => state.login);
@@ -41,7 +39,8 @@ const Register = () => {
       bvn: '',
       gender: '',
       address: '',
-      beneficiaryAccount: ''
+      beneficiaryAccount: '',
+      kycEmail: '' // For Squad API specific email if different
     }
   });
 
@@ -54,14 +53,10 @@ const Register = () => {
     // Step 3 Sub-step validation
     if (step === 3) {
       if (subStep === 1) {
-        if (!isBvnVerified) {
-          toast.error('Please verify your BVN first');
-          return;
-        }
-        fieldsToValidate = ['firstName', 'lastName', 'dob', 'gender'];
+        fieldsToValidate = ['firstName', 'lastName', 'middleName', 'bvn', 'dob', 'gender', 'kycEmail'];
       }
       if (subStep === 2) fieldsToValidate = ['mobileNumber', 'address'];
-      if (subStep === 3) fieldsToValidate = ['accountName', 'accountDescription'];
+      if (subStep === 3) fieldsToValidate = ['accountName', 'accountDescription', 'beneficiaryAccount'];
     }
     
     const isValid = await trigger(fieldsToValidate);
@@ -107,27 +102,6 @@ const Register = () => {
     }
     if (step === 4) setStep(3);
     if (step === 5) setStep(4);
-  };
-
-  const verifyBvn = async () => {
-    const bvnValue = watch('bvn');
-    if (!bvnValue || bvnValue.length !== 11) {
-      toast.error('Please enter a valid 11-digit BVN');
-      return;
-    }
-
-    setIsBvnVerifying(true);
-    // Simulate BVN verification API call
-    setTimeout(() => {
-      setIsBvnVerifying(false);
-      setIsBvnVerified(true);
-      // Pre-fill some data based on mock BVN verification
-      setValue('firstName', 'Oluwaseun');
-      setValue('lastName', 'Adebayo');
-      setValue('dob', '1992-05-15');
-      setValue('gender', 'Male');
-      toast.success('BVN Verified! Details pre-filled.');
-    }, 2000);
   };
 
   const onSubmit = async (data) => {
@@ -202,11 +176,11 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-6 max-w-lg mx-auto"
+            className="space-y-4 max-w-md mx-auto"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-extrabold tracking-tight mb-2">Join Isiro</h2>
-              <p className="text-zinc-500 dark:text-zinc-400">Step 1: Create your personal account</p>
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">Join Isiro</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs">Create your personal account</p>
             </div>
 
             <div className="space-y-4">
@@ -264,11 +238,11 @@ const Register = () => {
             <button 
               onClick={nextStep}
               disabled={isLoading}
-              className="app-button-primary w-full py-4 text-lg"
+              className="app-button-primary w-full py-3.5 text-base"
             >
-              {isLoading ? <Loader2 className="animate-spin" size={24} /> : (
+              {isLoading ? <Loader2 className="animate-spin" size={20} /> : (
                 <span className="flex items-center justify-center gap-2">
-                  Continue <ArrowRight size={20} />
+                  Continue <ArrowRight size={18} />
                 </span>
               )}
             </button>
@@ -282,15 +256,15 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-6 max-w-lg mx-auto"
+            className="space-y-4 max-w-md mx-auto"
           >
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Mail className="text-emerald-500" size={32} />
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Mail className="text-emerald-500" size={24} />
               </div>
-              <h2 className="text-3xl font-extrabold tracking-tight mb-2">Verify Email</h2>
-              <p className="text-zinc-500 dark:text-zinc-400">
-                We've sent a 6-digit code to <span className="font-semibold text-zinc-900 dark:text-white">{watch('email')}</span>
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">Verify Email</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs">
+                Enter the code sent to <span className="font-semibold text-zinc-900 dark:text-white">{watch('email')}</span>
               </p>
             </div>
 
@@ -302,7 +276,7 @@ const Register = () => {
                 })}
                 type="text" 
                 maxLength="6"
-                className="w-full text-center text-3xl font-bold tracking-[1rem] py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition-shadow"
+                className="w-full text-center text-2xl font-bold tracking-[0.75rem] py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition-shadow"
                 placeholder="000000"
               />
               {errors.otp && <p className="text-red-500 text-xs text-center mt-1">{errors.otp.message}</p>}
@@ -313,15 +287,15 @@ const Register = () => {
             </div>
 
             <div className="flex gap-4">
-              <button onClick={prevStep} className="flex-1 px-4 py-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2">
-                <ArrowLeft size={20} /> Back
+              <button onClick={prevStep} className="flex-1 px-4 py-3.5 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2 text-sm">
+                <ArrowLeft size={18} /> Back
               </button>
               <button 
                 onClick={nextStep}
                 disabled={isLoading}
-                className="flex-[2] app-button-primary py-4 text-lg"
+                className="flex-[2] app-button-primary py-3.5 text-base"
               >
-                {isLoading ? <Loader2 className="animate-spin" size={24} /> : 'Verify'}
+                {isLoading ? <Loader2 className="animate-spin" size={20} /> : 'Verify'}
               </button>
             </div>
           </motion.div>
@@ -334,11 +308,11 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-6 max-w-lg mx-auto"
+            className="space-y-4 max-w-md mx-auto"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-extrabold tracking-tight mb-2">Business Details</h2>
-              <p className="text-zinc-500 dark:text-zinc-400">Tell us about your trade</p>
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">Business Details</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs">Tell us about your trade</p>
             </div>
 
             <div className="space-y-4">
@@ -417,13 +391,13 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-6 max-w-xl mx-auto"
+            className="space-y-4 max-w-lg mx-auto"
           >
-            <div className="text-center mb-8 px-4">
-              <h2 className="text-3xl font-extrabold tracking-tight mb-2">Virtual Account Setup</h2>
-              <div className="flex items-center justify-center gap-2 mt-4">
+            <div className="text-center mb-6 px-4">
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">Virtual Account Setup</h2>
+              <div className="flex items-center justify-center gap-1.5 mt-3">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${subStep === i ? 'w-8 bg-emerald-500' : 'w-4 bg-zinc-200 dark:bg-zinc-800'}`} />
+                  <div key={i} className={`h-1 rounded-full transition-all duration-300 ${subStep === i ? 'w-5 bg-emerald-500' : 'w-2.5 bg-zinc-200 dark:bg-zinc-800'}`} />
                 ))}
               </div>
             </div>
@@ -437,68 +411,80 @@ const Register = () => {
                   exit={{ opacity: 0, y: -10 }}
                   className="space-y-6"
                 >
-                   <div className="app-card p-6 md:p-8 space-y-6 border-emerald-500/10">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
-                          <ShieldCheck size={20} />
+                   <div className="app-card p-5 md:p-6 space-y-4">
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                          <Fingerprint size={16} />
                         </div>
                         <div>
-                          <h3 className="font-bold text-zinc-900 dark:text-white">Identity Verification</h3>
-                          <p className="text-xs text-zinc-500">First, let's verify your BVN to protect your account.</p>
+                          <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Identity Details</h3>
+                          <p className="text-[10px] text-zinc-500">Provide your official KYC information.</p>
                         </div>
                       </div>
 
-                      <div className="relative group">
-                        <Fingerprint className={`absolute left-3 top-1/2 -translate-y-1/2 transition-colors ${isBvnVerified ? 'text-emerald-500' : 'text-zinc-400'}`} size={18} />
-                        <input 
-                          {...register('bvn', { required: true, maxLength: 11 })} 
-                          className={`app-input pl-10 pr-24 ${isBvnVerified ? 'border-emerald-500/50 bg-emerald-500/5' : ''}`} 
-                          placeholder="11-digit BVN" 
-                          disabled={isBvnVerified || isBvnVerifying}
-                        />
-                        <button 
-                          onClick={verifyBvn}
-                          disabled={isBvnVerified || isBvnVerifying}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-zinc-900 dark:bg-emerald-500 text-white rounded-lg text-xs font-bold disabled:opacity-50 transition-all hover:scale-105 active:scale-95"
-                        >
-                          {isBvnVerifying ? <Loader2 className="animate-spin" size={14} /> : isBvnVerified ? 'Verified' : 'Verify'}
-                        </button>
-                      </div>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">First Name</label>
+                            <input {...register('firstName', { required: 'First name is required' })} className="app-input" placeholder="e.g. Oluwaseun" />
+                            {errors.firstName && <p className="text-red-500 text-[10px] mt-1">{errors.firstName.message}</p>}
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Last Name</label>
+                            <input {...register('lastName', { required: 'Last name is required' })} className="app-input" placeholder="e.g. Adebayo" />
+                            {errors.lastName && <p className="text-red-500 text-[10px] mt-1">{errors.lastName.message}</p>}
+                          </div>
+                        </div>
 
-                      {isBvnVerified && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }} 
-                          animate={{ opacity: 1, height: 'auto' }}
-                          className="pt-4 space-y-4 border-t border-zinc-100 dark:border-zinc-800"
-                        >
-                           <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">First Name</label>
-                                <input {...register('firstName', { required: true })} className="app-input bg-zinc-50 dark:bg-zinc-900/50" readOnly />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Last Name</label>
-                                <input {...register('lastName', { required: true })} className="app-input bg-zinc-50 dark:bg-zinc-900/50" readOnly />
-                              </div>
-                           </div>
-                           <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Date of Birth</label>
-                                <input {...register('dob', { required: true })} type="date" className="app-input bg-zinc-50 dark:bg-zinc-900/50" readOnly />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1">Gender</label>
-                                <input {...register('gender', { required: true })} className="app-input bg-zinc-50 dark:bg-zinc-900/50" readOnly />
-                              </div>
-                           </div>
-                           <div className="bg-blue-50 dark:bg-blue-500/5 p-3 rounded-lg flex gap-3 items-start border border-blue-100 dark:border-blue-500/20">
-                              <Info className="text-blue-500 shrink-0 mt-0.5" size={14} />
-                              <p className="text-[10px] text-blue-700 dark:text-blue-400 leading-relaxed">
-                                These details were automatically pulled from your BVN record. If anything is incorrect, please contact support.
-                              </p>
-                           </div>
-                        </motion.div>
-                      )}
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Middle Name (Optional)</label>
+                          <input {...register('middleName')} className="app-input" placeholder="e.g. Omotayo" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">BVN (11 Digits)</label>
+                            <input 
+                              {...register('bvn', { 
+                                required: 'BVN is required', 
+                                minLength: { value: 11, message: 'BVN must be 11 digits' },
+                                maxLength: { value: 11, message: 'BVN must be 11 digits' }
+                              })} 
+                              type="text"
+                              className="app-input" 
+                              placeholder="222XXXXXXXX" 
+                            />
+                            {errors.bvn && <p className="text-red-500 text-[10px] mt-1">{errors.bvn.message}</p>}
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Email Address</label>
+                            <input 
+                              {...register('kycEmail', { required: 'KYC email is required' })} 
+                              type="email"
+                              className="app-input" 
+                              placeholder="name@example.com" 
+                            />
+                            {errors.kycEmail && <p className="text-red-500 text-[10px] mt-1">{errors.kycEmail.message}</p>}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Date of Birth</label>
+                            <input {...register('dob', { required: 'DOB is required' })} type="date" className="app-input" />
+                            {errors.dob && <p className="text-red-500 text-[10px] mt-1">{errors.dob.message}</p>}
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Gender</label>
+                            <select {...register('gender', { required: 'Gender is required' })} className="app-input bg-white dark:bg-zinc-950">
+                              <option value="">Select Gender</option>
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                            </select>
+                            {errors.gender && <p className="text-red-500 text-[10px] mt-1">{errors.gender.message}</p>}
+                          </div>
+                        </div>
+                      </div>
                    </div>
                 </motion.div>
               )}
@@ -587,7 +573,7 @@ const Register = () => {
               </button>
               <button 
                 onClick={nextStep}
-                disabled={isLoading || isBvnVerifying}
+                disabled={isLoading}
                 className="flex-[2] app-button-primary py-4 text-lg"
               >
                 {isLoading ? <Loader2 className="animate-spin" size={24} /> : (
@@ -607,60 +593,53 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-6 max-w-lg mx-auto"
+            className="space-y-4 max-w-md mx-auto"
           >
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-extrabold tracking-tight mb-2">Review Details</h2>
-              <p className="text-zinc-500 dark:text-zinc-400">Confirm your virtual account information</p>
+            <div className="text-center mb-5">
+              <div className="w-14 h-14 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-500">
+                <CheckCircle2 size={32} />
+              </div>
+              <h2 className="text-xl font-extrabold tracking-tight mb-1">Account Created!</h2>
+              <p className="text-zinc-500 dark:text-zinc-400 text-xs">Successfully provisioned.</p>
             </div>
 
-            <div className="app-card overflow-hidden">
-               <div className="bg-emerald-500 p-6 text-white">
-                  <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Account Name</p>
-                  <h3 className="text-2xl font-bold">{currentValues.accountName}</h3>
+            <div className="app-card overflow-hidden border-emerald-500/20 shadow-lg">
+               <div className="bg-emerald-500 p-4 text-white relative">
+                  <div className="absolute top-2 right-2 opacity-20">
+                    <Building2 size={40} />
+                  </div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-80 mb-0.5">Squad Virtual Account</p>
+                  <h3 className="text-xl font-bold">{currentValues.accountName}</h3>
                </div>
-               <div className="p-6 space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+               <div className="p-5 space-y-4 bg-white dark:bg-zinc-950">
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
                      <div>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Full Name</p>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">
-                           {currentValues.firstName} {currentValues.middleName} {currentValues.lastName}
-                        </p>
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter mb-0.5">Account Number</p>
+                        <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white tracking-wider">0123456789</p>
                      </div>
+                     <button className="text-emerald-500 font-bold text-[10px] hover:underline uppercase tracking-tighter">Copy</button>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
                      <div>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">BVN</p>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">●●●●●●{currentValues.bvn.slice(-4)}</p>
-                     </div>
-                     <div>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Phone</p>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">{currentValues.mobileNumber}</p>
-                     </div>
-                     <div>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Gender / DOB</p>
-                        <p className="text-sm font-semibold text-zinc-900 dark:text-white">{currentValues.gender}, {currentValues.dob}</p>
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter mb-0.5">Bank Name</p>
+                        <p className="text-base font-bold text-zinc-900 dark:text-white">Squad / GTBank</p>
                      </div>
                   </div>
-                  <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-tighter">Address</p>
-                     <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed mt-1">
-                        {currentValues.address}
+                  <div>
+                     <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter mb-0.5">Beneficiary Name</p>
+                     <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                        Isiro / {currentValues.firstName} {currentValues.lastName}
                      </p>
                   </div>
                </div>
             </div>
 
-            <div className="flex gap-4">
-              <button onClick={prevStep} className="flex-1 px-4 py-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2">
-                <ArrowLeft size={20} /> Back
-              </button>
-              <button 
-                onClick={nextStep}
-                disabled={isLoading}
-                className="flex-[2] app-button-primary py-4 text-lg"
-              >
-                Confirm & Continue <ArrowRight size={20} />
-              </button>
-            </div>
+            <button 
+              onClick={nextStep}
+              className="w-full app-button-primary py-3.5 text-base shadow-lg shadow-emerald-500/10"
+            >
+              Verify Identity via WhatsApp <ArrowRight size={18} className="ml-2" />
+            </button>
           </motion.div>
         )}
 
@@ -671,72 +650,49 @@ const Register = () => {
             initial="hidden"
             animate="visible"
             exit="exit"
-            className="space-y-8 max-w-lg mx-auto text-center"
+            className="space-y-6 max-w-md mx-auto text-center"
           >
-            <div className="space-y-4">
-              <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-emerald-500">
-                <MessageCircle size={48} />
+            <div className="space-y-2">
+              <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-500 shadow-inner">
+                <MessageCircle size={36} />
               </div>
-              <h2 className="text-4xl font-extrabold tracking-tight">WhatsApp Verification</h2>
-              <p className="text-xl text-zinc-500 dark:text-zinc-400">
-                Final step! Verify your WhatsApp to receive real-time business alerts.
+              <h2 className="text-xl font-extrabold tracking-tight">One Last Step!</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Verify your business by sending your code to our agent.
               </p>
             </div>
 
-            <div className="app-card p-8 space-y-6">
-              {!watch('whatsappCodeSent') ? (
-                <div className="space-y-4">
-                  <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                    <input 
-                      {...register('whatsappNumber', { required: 'WhatsApp number is required' })}
-                      type="tel"
-                      className="app-input pl-12"
-                      placeholder="WhatsApp Number (e.g. +234...)"
-                    />
-                  </div>
-                  <button 
-                    onClick={() => setValue('whatsappCodeSent', true)}
-                    className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-bold text-lg shadow-xl shadow-emerald-500/20 transition-all active:scale-95 flex items-center justify-center gap-2"
-                  >
-                    Send Verification Code <ArrowRight size={20} />
-                  </button>
-                </div>
-              ) : (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <p className="text-sm text-zinc-500">Enter the 6-digit code sent to <span className="font-bold">{watch('whatsappNumber')}</span></p>
-                  <input 
-                    {...register('whatsappOtp', { required: true, minLength: 6 })}
-                    type="text"
-                    maxLength="6"
-                    className="w-full text-center text-3xl font-bold tracking-[1rem] py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    placeholder="000000"
-                  />
-                  <button 
-                    onClick={() => onSubmit(currentValues)}
-                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold text-lg transition-all"
-                  >
-                    Complete Registration
-                  </button>
-                  <button 
-                    onClick={() => setValue('whatsappCodeSent', false)}
-                    className="text-emerald-500 text-sm font-medium hover:underline"
-                  >
-                    Change Number
-                  </button>
-                </motion.div>
-              )}
+            <div className="app-card p-6 space-y-6 border-emerald-500/30 bg-emerald-500/5 shadow-xl relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+               <div className="space-y-1">
+                 <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Verification Link Ready</p>
+                 <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                   Click below and hit "Send" in WhatsApp.
+                 </p>
+               </div>
+
+               <a 
+                href={`https://wa.me/2348000000000?text=Hi Isiro, I'm verifying my business account. My unique code is ISR-${Math.floor(100000 + Math.random() * 900000)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  setTimeout(() => onSubmit(currentValues), 2000);
+                }}
+                className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-black text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3"
+              >
+                <MessageCircle size={24} /> Open WhatsApp
+              </a>
+              
+              <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
+                <p className="text-[10px] text-zinc-400 italic">
+                  Verification usually takes less than 2 minutes. Once sent, you'll be automatically redirected.
+                </p>
+              </div>
             </div>
 
-            <div className="pt-4 flex flex-col gap-4">
-              <button onClick={prevStep} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-sm flex items-center justify-center gap-1">
-                <ArrowLeft size={14} /> Back to details
-              </button>
-            </div>
+            <button onClick={prevStep} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-sm flex items-center justify-center gap-1 transition-colors">
+              <ArrowLeft size={14} /> Back to account details
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
