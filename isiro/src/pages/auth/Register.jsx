@@ -60,6 +60,11 @@ const Register = () => {
     }
     
     const isValid = await trigger(fieldsToValidate);
+    if (!isValid) {
+      toast.error('Please fill all required fields correctly');
+      return;
+    }
+    
     if (isValid) {
       if (step === 1) {
         setIsLoading(true);
@@ -137,6 +142,11 @@ const Register = () => {
     '₦5,000,000+'
   ];
 
+  const handleCopyAccount = (number) => {
+    navigator.clipboard.writeText(number);
+    toast.success('Account number copied!');
+  };
+
   const stepVariants = {
     hidden: { opacity: 0, x: 20 },
     visible: { opacity: 1, x: 0 },
@@ -146,21 +156,21 @@ const Register = () => {
   const currentValues = watch();
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-4 pb-20">
+    <div className="w-full max-w-2xl mx-auto px-4 pb-10">
       {/* Progress Indicator - only show once email is verified and onboarding starts */}
       {step >= 2 && (
-        <div className="flex items-center justify-between mb-12 px-2 relative">
-          <div className="absolute top-4 left-0 w-full h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-10 mx-auto" />
+        <div className="flex items-center justify-between mb-8 px-2 relative max-w-sm mx-auto">
+          <div className="absolute top-3 left-0 w-full h-0.5 bg-zinc-200 dark:bg-zinc-800 -z-10 mx-auto" />
           {[2, 3, 4, 5].map((s) => (
-            <div key={s} className="flex flex-col items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 ${
+            <div key={s} className="flex flex-col items-center gap-1.5">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300 border-2 ${
                 step >= s 
                   ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 scale-110' 
                   : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400'
               }`}>
                 {s === 2 ? 1 : s === 3 ? 2 : s === 4 ? 3 : 4}
               </div>
-              <span className={`text-[10px] font-bold uppercase tracking-wider ${step >= s ? 'text-emerald-500' : 'text-zinc-400'}`}>
+              <span className={`text-[8px] font-bold uppercase tracking-wider ${step >= s ? 'text-emerald-500' : 'text-zinc-400'}`}>
                 {s === 2 ? 'Business' : s === 3 ? 'Virtual' : s === 4 ? 'Verify' : 'Finish'}
               </span>
             </div>
@@ -365,18 +375,18 @@ const Register = () => {
               </div>
             </div>
 
-            <div className="flex gap-4 pt-4">
-              <button onClick={prevStep} className="flex-1 px-4 py-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2">
-                <ArrowLeft size={20} /> Back
+            <div className="flex gap-3 pt-2">
+              <button onClick={prevStep} className="flex-1 app-button">
+                <ArrowLeft size={18} className="mr-2" /> Back
               </button>
               <button 
                 onClick={nextStep}
                 disabled={isLoading}
-                className="flex-[2] app-button-primary py-4 text-lg"
+                className="flex-[2] app-button-primary"
               >
-                {isLoading ? <Loader2 className="animate-spin" size={24} /> : (
+                {isLoading ? <Loader2 className="animate-spin" size={20} /> : (
                   <span className="flex items-center justify-center gap-2">
-                    Next Step <ArrowRight size={20} />
+                    Next Step <ArrowRight size={18} />
                   </span>
                 )}
               </button>
@@ -423,65 +433,70 @@ const Register = () => {
                       </div>
 
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">First Name</label>
-                            <input {...register('firstName', { required: 'First name is required' })} className="app-input" placeholder="e.g. Oluwaseun" />
-                            {errors.firstName && <p className="text-red-500 text-[10px] mt-1">{errors.firstName.message}</p>}
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">First Name</label>
+                            <input {...register('firstName', { required: 'First name is required' })} className="app-input py-2.5 text-sm" placeholder="e.g. Oluwaseun" />
+                            {errors.firstName && <p className="text-red-500 text-[9px] mt-0.5">{errors.firstName.message}</p>}
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Last Name</label>
-                            <input {...register('lastName', { required: 'Last name is required' })} className="app-input" placeholder="e.g. Adebayo" />
-                            {errors.lastName && <p className="text-red-500 text-[10px] mt-1">{errors.lastName.message}</p>}
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">Last Name</label>
+                            <input {...register('lastName', { required: 'Last name is required' })} className="app-input py-2.5 text-sm" placeholder="e.g. Adebayo" />
+                            {errors.lastName && <p className="text-red-500 text-[9px] mt-0.5">{errors.lastName.message}</p>}
                           </div>
                         </div>
 
-                        <div>
-                          <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Middle Name (Optional)</label>
-                          <input {...register('middleName')} className="app-input" placeholder="e.g. Omotayo" />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">BVN (11 Digits)</label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="col-span-1">
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">Middle Name</label>
+                            <input {...register('middleName')} className="app-input py-2.5 text-sm" placeholder="Optional" />
+                          </div>
+                          <div className="col-span-1">
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">BVN</label>
                             <input 
                               {...register('bvn', { 
                                 required: 'BVN is required', 
-                                minLength: { value: 11, message: 'BVN must be 11 digits' },
-                                maxLength: { value: 11, message: 'BVN must be 11 digits' }
+                                minLength: { value: 11, message: 'Must be 11 digits' },
+                                maxLength: { value: 11, message: 'Must be 11 digits' }
                               })} 
                               type="text"
-                              className="app-input" 
+                              className="app-input py-2.5 text-sm" 
                               placeholder="222XXXXXXXX" 
                             />
-                            {errors.bvn && <p className="text-red-500 text-[10px] mt-1">{errors.bvn.message}</p>}
-                          </div>
-                          <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Email Address</label>
-                            <input 
-                              {...register('kycEmail', { required: 'KYC email is required' })} 
-                              type="email"
-                              className="app-input" 
-                              placeholder="name@example.com" 
-                            />
-                            {errors.kycEmail && <p className="text-red-500 text-[10px] mt-1">{errors.kycEmail.message}</p>}
+                            {errors.bvn && <p className="text-red-500 text-[9px] mt-0.5">{errors.bvn.message}</p>}
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-3">
                           <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Date of Birth</label>
-                            <input {...register('dob', { required: 'DOB is required' })} type="date" className="app-input" />
-                            {errors.dob && <p className="text-red-500 text-[10px] mt-1">{errors.dob.message}</p>}
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">Email Address</label>
+                            <input 
+                              {...register('kycEmail', { 
+                                required: 'Email is required',
+                                pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
+                              })} 
+                              type="email"
+                              className="app-input py-2.5 text-sm" 
+                              placeholder="name@example.com" 
+                            />
+                            {errors.kycEmail && <p className="text-red-500 text-[9px] mt-0.5">{errors.kycEmail.message}</p>}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">Date of Birth</label>
+                            <input {...register('dob', { required: 'DOB is required' })} type="date" className="app-input py-2 text-xs" />
+                            {errors.dob && <p className="text-red-500 text-[9px] mt-0.5">{errors.dob.message}</p>}
                           </div>
                           <div>
-                            <label className="text-[10px] font-bold text-zinc-500 uppercase ml-1 block mb-1.5">Gender</label>
-                            <select {...register('gender', { required: 'Gender is required' })} className="app-input bg-white dark:bg-zinc-950">
-                              <option value="">Select Gender</option>
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 block mb-1">Gender</label>
+                            <select {...register('gender', { required: 'Gender is required' })} className="app-input py-2 text-xs bg-white dark:bg-zinc-950">
+                              <option value="">Select</option>
                               <option value="Male">Male</option>
                               <option value="Female">Female</option>
                             </select>
-                            {errors.gender && <p className="text-red-500 text-[10px] mt-1">{errors.gender.message}</p>}
+                            {errors.gender && <p className="text-red-500 text-[9px] mt-0.5">{errors.gender.message}</p>}
                           </div>
                         </div>
                       </div>
@@ -495,30 +510,30 @@ const Register = () => {
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: -10 }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
-                   <div className="app-card p-6 md:p-8 space-y-6">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                          <MapPin size={20} />
+                   <div className="app-card p-5 md:p-6 space-y-4">
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                          <MapPin size={16} />
                         </div>
                         <div>
-                          <h3 className="font-bold text-zinc-900 dark:text-white">Contact & Address</h3>
-                          <p className="text-xs text-zinc-500">We need your current location for KYC requirements.</p>
+                          <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Contact & Address</h3>
+                          <p className="text-[10px] text-zinc-500">KYC residency requirements.</p>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="relative">
-                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
                           <input {...register('mobileNumber', { required: true })} className="app-input pl-10" placeholder="Mobile Number" />
                         </div>
                         <div className="relative">
-                          <MapPin className="absolute left-3 top-4 text-zinc-400" size={18} />
+                          <MapPin className="absolute left-3 top-3.5 text-zinc-400" size={16} />
                           <textarea 
                             {...register('address', { required: true })} 
-                            className="app-input pl-10 min-h-[120px] py-4 resize-none" 
-                            placeholder="Residential Address (e.g. 12, Adekunle St, Yaba, Lagos)" 
+                            className="app-input pl-10 min-h-[90px] py-3 resize-none text-sm" 
+                            placeholder="Residential Address" 
                           />
                         </div>
                       </div>
@@ -532,33 +547,34 @@ const Register = () => {
                   initial={{ opacity: 0, y: 10 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: -10 }}
-                  className="space-y-6"
+                  className="space-y-4"
                 >
-                   <div className="app-card p-6 md:p-8 space-y-6">
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
-                          <Building2 size={20} />
+                   <div className="app-card p-5 md:p-6 space-y-4">
+                      <div className="flex items-center gap-2.5 mb-1">
+                        <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-500/10 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                          <Building2 size={16} />
                         </div>
                         <div>
-                          <h3 className="font-bold text-zinc-900 dark:text-white">Account Configuration</h3>
-                          <p className="text-xs text-zinc-500">How would you like your virtual account to appear?</p>
+                          <h3 className="font-bold text-zinc-900 dark:text-white text-sm">Account Configuration</h3>
+                          <p className="text-[10px] text-zinc-500">Virtual account display settings.</p>
                         </div>
                       </div>
 
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-xs font-bold text-zinc-500 uppercase ml-1 mb-1.5 block">Account Display Name</label>
-                          <input {...register('accountName', { required: true })} className="app-input" placeholder="e.g. Ade's Store Main" />
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-1 gap-3">
+                          <div>
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 mb-1 block">Account Display Name</label>
+                            <input {...register('accountName', { required: true })} className="app-input text-sm" placeholder="e.g. Ade's Store Main" />
+                          </div>
+                          <div>
+                            <label className="text-[9px] font-bold text-zinc-500 uppercase ml-1 mb-1 block">Purpose / Description</label>
+                            <input {...register('accountDescription', { required: true })} className="app-input text-sm" placeholder="e.g. For Instagram customer payments" />
+                          </div>
                         </div>
-                        <div>
-                          <label className="text-xs font-bold text-zinc-500 uppercase ml-1 mb-1.5 block">Purpose / Description</label>
-                          <input {...register('accountDescription', { required: true })} className="app-input" placeholder="e.g. For Instagram customer payments" />
-                        </div>
-                        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-800">
-                           <div className="bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
-                             <label className="text-xs font-bold text-zinc-500 uppercase mb-2 block">Settlement Bank Account (Optional)</label>
-                             <input {...register('beneficiaryAccount')} className="app-input bg-white dark:bg-zinc-950" placeholder="10-digit Account Number" />
-                             <p className="text-[10px] text-zinc-400 mt-2 italic">Funds will be settled here automatically from your wallet.</p>
+                        <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                           <div className="bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
+                             <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Settlement Bank Account (Optional)</label>
+                             <input {...register('beneficiaryAccount')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="Account Number" />
                            </div>
                         </div>
                       </div>
@@ -567,18 +583,19 @@ const Register = () => {
               )}
             </AnimatePresence>
 
-            <div className="flex gap-4 pt-4">
-              <button onClick={prevStep} className="flex-1 px-4 py-4 border border-zinc-200 dark:border-zinc-800 rounded-xl font-medium hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors flex items-center justify-center gap-2">
-                <ArrowLeft size={20} /> Back
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={prevStep} className="flex-1 app-button">
+                <ArrowLeft size={16} className="mr-1.5" /> Back
               </button>
               <button 
+                type="button"
                 onClick={nextStep}
                 disabled={isLoading}
-                className="flex-[2] app-button-primary py-4 text-lg"
+                className="flex-[2] app-button-primary"
               >
-                {isLoading ? <Loader2 className="animate-spin" size={24} /> : (
-                  <span className="flex items-center justify-center gap-2">
-                    {subStep === 3 ? 'Review Summary' : 'Continue'} <ArrowRight size={20} />
+                {isLoading ? <Loader2 className="animate-spin" size={18} /> : (
+                  <span className="flex items-center justify-center gap-1.5">
+                    {subStep === 3 ? 'Review Summary' : 'Continue'} <ArrowRight size={16} />
                   </span>
                 )}
               </button>
@@ -617,7 +634,12 @@ const Register = () => {
                         <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-tighter mb-0.5">Account Number</p>
                         <p className="text-xl font-mono font-bold text-zinc-900 dark:text-white tracking-wider">0123456789</p>
                      </div>
-                     <button className="text-emerald-500 font-bold text-[10px] hover:underline uppercase tracking-tighter">Copy</button>
+                     <button 
+                       onClick={() => handleCopyAccount('0123456789')}
+                       className="text-emerald-500 font-bold text-[10px] hover:underline uppercase tracking-tighter flex items-center gap-1 bg-emerald-500/5 px-2 py-1 rounded-md"
+                     >
+                       Copy
+                     </button>
                   </div>
                   <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-800 pb-3">
                      <div>
