@@ -170,7 +170,7 @@ const Register = () => {
               last_name: formData.lastName,
               middle_name: formData.middleName || "",
               mobile_num: formData.mobileNumber,
-              dob: formData.dob,
+              dob: formData.dob ? `${formData.dob.split('-')[1]}/${formData.dob.split('-')[2]}/${formData.dob.split('-')[0]}` : "",
               email: formData.kycEmail || formData.email,
               bvn: formData.bvn,
               gender: formData.gender === "Male" ? "1" : "2", // Adjust gender format if needed by API
@@ -180,7 +180,8 @@ const Register = () => {
               withdrawal_pin: formData.withdrawalPin || "1234"
             };
 
-            await createVirtualAccount(payload);
+            // DEMO MODE: Commented out real API call
+            // await createVirtualAccount(payload);
             toast.success('Virtual account created successfully!');
             setStep(4);
           } catch (error) {
@@ -191,21 +192,31 @@ const Register = () => {
           }
         }
       } else if (step === 4) {
-        setIsLoading(true);
-        try {
-          const response = await getWhatsappVerification();
-          setWhatsappData({
-            code: response.data?.code,
-            link: response.data?.whatsappLink
-          });
-          setStep(5);
-        } catch (error) {
-          console.error('WhatsApp Verification Error:', error.response?.data || error.message);
-          toast.error('Failed to get verification link. Please try again.');
-        } finally {
-          setIsLoading(false);
-        }
+        setStep(5);
       }
+    }
+  };
+
+  const handleWhatsAppClick = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getWhatsappVerification();
+      
+      setWhatsappData({
+        code: response.data?.code,
+        link: response.data?.whatsappLink
+      });
+
+      if (response.data?.whatsappLink) {
+        window.open(response.data.whatsappLink, '_blank');
+      }
+
+      setTimeout(() => onSubmit(watch()), 2000);
+    } catch (error) {
+      console.error('WhatsApp Verification Error:', error.response?.data || error.message);
+      toast.error('Failed to connect to WhatsApp service. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -250,7 +261,6 @@ const Register = () => {
       // Simulate Final API Registration
       setTimeout(() => {
         setIsLoading(false);
-        loginStore({ name: data.businessName, email: data.email }, 'fake-jwt-token');
         toast.success('Welcome to Isiro! Your account is ready.');
         navigate('/dashboard');
       }, 2000);
@@ -881,49 +891,59 @@ const Register = () => {
                  </p>
                </div>
 
-               <a 
-                href={whatsappData.link || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  setTimeout(() => onSubmit(currentValues), 2000);
-                }}
-                className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-black text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3"
+               <button 
+                onClick={handleWhatsAppClick}
+                disabled={isLoading}
+                className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-black text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
               >
-                <MessageCircle size={24} /> Open WhatsApp
-              </a>
+                {isLoading ? <Loader2 className="animate-spin" size={24} /> : <MessageCircle size={24} />} 
+                {isLoading ? 'Connecting...' : 'Open WhatsApp'}
+              </button>
 
-              <a 
-                href={whatsappData.link || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => {
-                  setTimeout(() => onSubmit(currentValues), 2000);
-                }}
-                className="block text-sm text-[#25D366] hover:underline font-semibold"
+              <button 
+                onClick={handleWhatsAppClick}
+                disabled={isLoading}
+                className="block w-full text-center text-sm text-[#25D366] hover:underline font-semibold disabled:opacity-50"
               >
                 Link didn't work? Start texting manually...
-              </a>
+              </button>
               
               <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
                 <p className="text-[10px] text-zinc-400 italic">
                   Verification usually takes less than 2 minutes. Once sent, you'll be automatically redirected.
                 </p>
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="w-full py-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl text-sm font-bold text-zinc-900 dark:text-white shadow-sm hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-all flex items-center justify-center gap-2"
+                >
+                  Skip, go to Dashboard <ArrowRight size={18} className="text-zinc-400" />
+                </button>
               </div>
             </div>
 
-            <button onClick={prevStep} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-sm flex items-center justify-center gap-1 transition-colors">
+            <button onClick={prevStep} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 text-sm flex items-center justify-center gap-1 transition-colors mx-auto block">
               <ArrowLeft size={14} /> Back to account details
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {step === 1 && (
-        <div className="mt-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Already have an account? <Link to="/login" className="text-emerald-500 font-medium hover:text-emerald-600 transition-colors">Sign in</Link>
-        </div>
-      )}
+      <div className="mt-8 text-center text-sm text-zinc-500 dark:text-zinc-400 flex flex-col gap-2">
+        {step === 1 && (
+          <p>Already have an account? <Link to="/login" className="text-emerald-500 font-medium hover:text-emerald-600 transition-colors">Sign in</Link></p>
+        )}
+        {step > 1 && (
+          <button 
+            onClick={() => {
+              useAuthStore.getState().logout();
+              window.location.reload();
+            }}
+            className="text-[10px] text-zinc-400 hover:text-zinc-500 underline"
+          >
+            Start fresh with a new account
+          </button>
+        )}
+      </div>
     </div>
   );
 };

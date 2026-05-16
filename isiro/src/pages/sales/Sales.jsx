@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Search, Filter, Download, Receipt, ExternalLink, Plus, FileSpreadsheet } from 'lucide-react';
+import { Search, Filter, Download, Receipt, ExternalLink, Plus, FileText } from 'lucide-react';
 import { motion } from 'framer-motion';
 import RecordSaleModal from './components/RecordSaleModal';
 import toast from 'react-hot-toast';
@@ -48,20 +48,7 @@ const Sales = () => {
           <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Sales History</h1>
           <p className="text-zinc-500 dark:text-zinc-400 text-sm mt-1">A finalized record of all successful transactions and receipts.</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            accept=".xlsx, .xls, .csv" 
-            onChange={handleFileUpload}
-          />
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="px-4 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20 rounded-xl text-sm font-medium transition-colors flex items-center gap-2 shadow-sm"
-          >
-            <FileSpreadsheet size={16} /> Upload Excel
-          </button>
+        <div className="flex items-center gap-3">
           <button className="px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors flex items-center gap-2 shadow-sm">
             <Download size={16} /> Export CSV
           </button>

@@ -31,10 +31,10 @@ const Login = () => {
       // Redirection Logic based on onboarding progress
       if (!user.businessName || !user.businessCategory) {
         setOnboardingStep(2);
-        navigate('/register');
+        navigate('/dashboard'); // DEMO MODE: was '/register'
       } else if (!user.virtualAccount) { 
         setOnboardingStep(3);
-        navigate('/register');
+        navigate('/dashboard'); // DEMO MODE: was '/register'
       } else {
         navigate('/dashboard');
       }
