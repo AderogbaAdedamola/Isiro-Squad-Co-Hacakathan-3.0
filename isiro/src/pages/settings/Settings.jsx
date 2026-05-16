@@ -1,4 +1,4 @@
-import { User, Shield, Bell, CreditCard, HelpCircle } from 'lucide-react';
+import { User, Shield, Bell, CreditCard, HelpCircle, MessageCircle } from 'lucide-react';
 
 const Settings = () => {
   const sections = [
@@ -15,6 +15,22 @@ const Settings = () => {
       items: [
         { name: 'Business Details', icon: <User size={20} />, description: 'Edit your business name and category' },
       ]
+    },
+    {
+      title: 'Support & Help',
+      items: [
+        { 
+          name: 'Go to WhatsApp Support', 
+          icon: <MessageCircle size={20} />, 
+          description: 'Chat instantly with our support team',
+          href: 'https://wa.me/2348000000000?text=Hi Isiro Support'
+        },
+        { 
+          name: 'Help Center', 
+          icon: <HelpCircle size={20} />, 
+          description: 'View FAQs and documentation' 
+        },
+      ]
     }
   ];
 
@@ -30,20 +46,44 @@ const Settings = () => {
           <div key={section.title} className="space-y-4">
             <h2 className="text-sm font-bold text-zinc-400 uppercase tracking-widest px-1">{section.title}</h2>
             <div className="space-y-3">
-              {section.items.map((item) => (
-                <div key={item.name} className="app-card p-4 flex items-center justify-between hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 cursor-pointer group transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-500 group-hover:text-emerald-500 transition-colors">
-                      {item.icon}
+              {section.items.map((item) => {
+                const ItemContent = (
+                  <>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-900 flex items-center justify-center text-zinc-500 group-hover:text-emerald-500 transition-colors">
+                        {item.icon}
+                      </div>
+                      <div>
+                        <p className="font-bold text-zinc-900 dark:text-white">{item.name}</p>
+                        <p className="text-xs text-zinc-500">{item.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold text-zinc-900 dark:text-white">{item.name}</p>
-                      <p className="text-xs text-zinc-500">{item.description}</p>
-                    </div>
+                    <ChevronRight size={18} className="text-zinc-300" />
+                  </>
+                );
+
+                const className = "app-card p-4 flex items-center justify-between hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 cursor-pointer group transition-all";
+
+                if (item.href) {
+                  return (
+                    <a 
+                      key={item.name} 
+                      href={item.href} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={className}
+                    >
+                      {ItemContent}
+                    </a>
+                  );
+                }
+
+                return (
+                  <div key={item.name} className={className}>
+                    {ItemContent}
                   </div>
-                  <ChevronRight size={18} className="text-zinc-300" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}

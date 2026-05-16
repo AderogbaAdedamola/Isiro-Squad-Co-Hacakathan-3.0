@@ -30,6 +30,19 @@ const initialPending = [
 
 const PendingQueue = () => {
   const [pendingItems, setPendingItems] = useState(initialPending);
+  const [assigningId, setAssigningId] = useState(null);
+  const [manualAssignValue, setManualAssignValue] = useState('');
+
+  const handleManualAssign = (id) => {
+    if (!manualAssignValue.trim()) {
+      toast.error('Please enter an item or customer name.');
+      return;
+    }
+    toast.success(`Assigned to "${manualAssignValue}" successfully!`);
+    setPendingItems((prev) => prev.filter((item) => item.id !== id));
+    setAssigningId(null);
+    setManualAssignValue('');
+  };
 
   const handleResolve = (id, action) => {
     if (action === 'approve') {
@@ -146,10 +159,45 @@ const PendingQueue = () => {
                         <ArrowRight size={16} className="opacity-50" />
                       </button>
                       
-                      <button className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl text-sm font-medium transition-colors">
-                        <span className="flex items-center gap-2"><Search size={16} className="text-zinc-400" /> Manual Assign</span>
-                        <ChevronDown size={16} className="opacity-50" />
-                      </button>
+                      {assigningId === item.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            placeholder="Enter item or customer..."
+                            value={manualAssignValue}
+                            onChange={(e) => setManualAssignValue(e.target.value)}
+                            className="flex-1 px-3 py-2.5 bg-white dark:bg-zinc-900 border border-emerald-500 dark:border-emerald-500/50 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleManualAssign(item.id);
+                              if (e.key === 'Escape') setAssigningId(null);
+                            }}
+                          />
+                          <button
+                            onClick={() => handleManualAssign(item.id)}
+                            className="p-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 transition-colors"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => setAssigningId(null)}
+                            className="p-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => {
+                            setAssigningId(item.id);
+                            setManualAssignValue('');
+                          }}
+                          className="w-full flex items-center justify-between px-4 py-3 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white rounded-xl text-sm font-medium transition-colors"
+                        >
+                          <span className="flex items-center gap-2"><Search size={16} className="text-zinc-400" /> Manual Assign</span>
+                          <ChevronDown size={16} className="opacity-50" />
+                        </button>
+                      )}
 
                       <button 
                         onClick={() => handleResolve(item.id, 'reject')}

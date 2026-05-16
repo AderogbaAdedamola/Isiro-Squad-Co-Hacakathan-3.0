@@ -2,13 +2,34 @@ import { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
 import { ArrowUpRight, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { withdrawFunds } from '../../../api/accountApi';
+import { withdrawFunds, lookupAccount } from '../../../api/accountApi';
+import { Loader2 } from 'lucide-react';
 
 const WithdrawModal = ({ isOpen, onClose, account }) => {
   const [amount, setAmount] = useState('');
   const [pin, setPin] = useState('');
   const [beneficiary, setBeneficiary] = useState('');
+  const [newBankCode, setNewBankCode] = useState('');
+  const [newAccountNumber, setNewAccountNumber] = useState('');
+  const [lookupName, setLookupName] = useState('');
+  const [isLookingUp, setIsLookingUp] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleLookup = async () => {
+    if (!newBankCode || newAccountNumber.length !== 10) return;
+    
+    setIsLookingUp(true);
+    setLookupName('');
+    try {
+      const response = await lookupAccount(newBankCode, newAccountNumber);
+      setLookupName(response.data?.accountName || 'Unknown Account Name');
+    } catch (error) {
+      console.error('Lookup Error:', error.response?.data || error.message);
+      toast.error('Could not verify account details. Please check the account number.');
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,6 +113,45 @@ const WithdrawModal = ({ isOpen, onClose, account }) => {
             <option value="saved_2">GTBank - 0987***321 (Business Partner)</option>
             <option value="new">+ Add New Account</option>
           </select>
+          
+          {beneficiary === 'new' && (
+            <div className="mt-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Bank Code</label>
+                  <input 
+                    value={newBankCode}
+                    onChange={(e) => setNewBankCode(e.target.value)}
+                    placeholder="e.g. 058"
+                    className="app-input text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-zinc-500 uppercase mb-1">Account Number</label>
+                  <input 
+                    value={newAccountNumber}
+                    onChange={(e) => setNewAccountNumber(e.target.value)}
+                    placeholder="10 digits"
+                    maxLength={10}
+                    className="app-input text-sm"
+                  />
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={handleLookup}
+                disabled={isLookingUp || !newBankCode || newAccountNumber.length !== 10}
+                className="w-full py-2 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 text-sm font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {isLookingUp ? <Loader2 className="animate-spin" size={16} /> : 'Verify Account'}
+              </button>
+              {lookupName && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg text-center text-sm font-bold border border-emerald-200 dark:border-emerald-500/20">
+                  {lookupName}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex gap-3">

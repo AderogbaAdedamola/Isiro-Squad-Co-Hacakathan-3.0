@@ -8,6 +8,7 @@ import CreateAccountModal from './components/CreateAccountModal';
 import WithdrawModal from './components/WithdrawModal';
 import SetPinModal from './components/SetPinModal';
 import UpdateAccountModal from './components/UpdateAccountModal';
+import WithdrawalHistoryModal from './components/WithdrawalHistoryModal';
 
 const initialAccounts = [
   { id: 'VA-001', name: 'Main Storefront', bank: 'Wema Bank', accountNumber: '0123456789', balance: 425000, status: 'Active' },
@@ -24,6 +25,7 @@ const VirtualAccounts = () => {
   const [selectedWithdrawAccount, setSelectedWithdrawAccount] = useState(null);
   const [selectedPinAccount, setSelectedPinAccount] = useState(null);
   const [selectedEditAccount, setSelectedEditAccount] = useState(null);
+  const [selectedHistoryAccount, setSelectedHistoryAccount] = useState(null);
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this virtual account?")) {
@@ -135,7 +137,10 @@ const VirtualAccounts = () => {
                   <p className="text-xs text-zinc-500 mb-1 font-medium">Available Balance</p>
                   <p className="text-2xl font-bold text-zinc-900 dark:text-white">₦{account.balance.toLocaleString()}</p>
                 </div>
-                <button className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 mb-1">
+                <button 
+                  onClick={() => setSelectedHistoryAccount(account)}
+                  className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 mb-1"
+                >
                   History <ArrowUpRight size={14} />
                 </button>
               </div>
@@ -195,6 +200,11 @@ const VirtualAccounts = () => {
         onClose={() => setSelectedEditAccount(null)} 
         account={selectedEditAccount} 
         onUpdate={handleUpdateAccount}
+      />
+      <WithdrawalHistoryModal 
+        isOpen={!!selectedHistoryAccount} 
+        onClose={() => setSelectedHistoryAccount(null)} 
+        account={selectedHistoryAccount} 
       />
     </div>
   );

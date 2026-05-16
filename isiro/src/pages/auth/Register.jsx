@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
 import { createVirtualAccount } from '../../api/accountApi';
+import { getWhatsappVerification } from '../../api/authApi';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -13,6 +14,7 @@ const Register = () => {
   const user = useAuthStore(state => state.user);
   
   const [step, setStep] = useState(currentOnboardingStep || 1);
+  const [whatsappData, setWhatsappData] = useState({ code: '', link: '' });
   const [subStep, setSubStep] = useState(1); // For Step 3 sub-navigation
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -189,7 +191,20 @@ const Register = () => {
           }
         }
       } else if (step === 4) {
-        setStep(5);
+        setIsLoading(true);
+        try {
+          const response = await getWhatsappVerification();
+          setWhatsappData({
+            code: response.data?.code,
+            link: response.data?.whatsappLink
+          });
+          setStep(5);
+        } catch (error) {
+          console.error('WhatsApp Verification Error:', error.response?.data || error.message);
+          toast.error('Failed to get verification link. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
   };
@@ -713,8 +728,23 @@ const Register = () => {
                                  <input {...register('beneficiaryAccount')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="Account Number" />
                                </div>
                                <div>
-                                 <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Bank Code (Optional)</label>
-                                 <input {...register('beneficiaryBankCode')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="e.g. 058 (GTB)" />
+                                 <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Settlement Bank (Optional)</label>
+                                 <select 
+                                   {...register('beneficiaryBankCode')} 
+                                   className="app-input bg-white dark:bg-zinc-950 text-sm appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1em_1em]"
+                                   style={{ backgroundImage: `url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 9l6 6 6-6'/%3E%3C/svg%3E")` }}
+                                 >
+                                   <option value="">Select Bank...</option>
+                                   <option value="044">Access Bank</option>
+                                   <option value="058">GTBank</option>
+                                   <option value="011">First Bank</option>
+                                   <option value="033">UBA</option>
+                                   <option value="057">Zenith Bank</option>
+                                   <option value="035">Wema Bank</option>
+                                   <option value="090267">Kuda Bank</option>
+                                   <option value="999992">Opay</option>
+                                   <option value="50515">Moniepoint</option>
+                                 </select>
                                </div>
                              </div>
                              <div>
@@ -847,12 +877,12 @@ const Register = () => {
                <div className="space-y-1">
                  <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Verification Link Ready</p>
                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                   Click below and hit "Send" in WhatsApp.
+                   Click below and hit "Send" in WhatsApp to verify code: <span className="font-bold text-zinc-900 dark:text-white">{whatsappData.code || '...'}</span>
                  </p>
                </div>
 
                <a 
-                href={`https://wa.me/2348000000000?text=Hi Isiro, I'm verifying my business account. My unique code is ISR-${Math.floor(100000 + Math.random() * 900000)}`}
+                href={whatsappData.link || '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => {
@@ -861,6 +891,18 @@ const Register = () => {
                 className="w-full py-4 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-2xl font-black text-lg shadow-lg transition-all active:scale-95 flex items-center justify-center gap-3"
               >
                 <MessageCircle size={24} /> Open WhatsApp
+              </a>
+
+              <a 
+                href={whatsappData.link || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => {
+                  setTimeout(() => onSubmit(currentValues), 2000);
+                }}
+                className="block text-sm text-[#25D366] hover:underline font-semibold"
+              >
+                Link didn't work? Start texting manually...
               </a>
               
               <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">

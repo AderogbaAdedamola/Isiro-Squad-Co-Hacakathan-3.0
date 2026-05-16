@@ -28,3 +28,8 @@ export const requestPasswordReset = async (data) => {
 export const resetPassword = async (data) => {
   return apiClient.post('/users/password-reset/new', data);
 };
+
+// Get WhatsApp verification code and link
+export const getWhatsappVerification = async () => {
+  return apiClient.get('/users/whatsapp-verification');
+};
