@@ -69,7 +69,10 @@ const Login = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Password</label>
+          <div className="flex justify-between items-center mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">Password</label>
+            <Link to="/forgot-password" className="text-xs text-emerald-500 hover:text-emerald-600 font-medium transition-colors">Forgot Password?</Link>
+          </div>
           <input 
             {...register('password', { required: 'Password is required' })}
             type="password" 

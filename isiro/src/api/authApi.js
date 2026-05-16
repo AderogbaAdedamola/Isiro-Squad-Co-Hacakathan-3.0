@@ -13,3 +13,18 @@ export const register = async (userData) => {
 export const renewToken = async () => {
   return apiClient.post('/users/renew-token');
 };
+
+// Logout user
+export const logoutUser = async () => {
+  return apiClient.post('/users/logout');
+};
+
+// Request password reset OTP
+export const requestPasswordReset = async (data) => {
+  return apiClient.post('/users/password-reset/request', data);
+};
+
+// Set new password after OTP verification
+export const resetPassword = async (data) => {
+  return apiClient.post('/users/password-reset/new', data);
+};

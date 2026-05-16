@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/axios';
+import { createVirtualAccount } from '../../api/accountApi';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -61,7 +62,7 @@ const Register = () => {
         fieldsToValidate = ['firstName', 'lastName', 'middleName', 'bvn', 'dob', 'gender', 'kycEmail'];
       }
       if (subStep === 2) fieldsToValidate = ['mobileNumber', 'address'];
-      if (subStep === 3) fieldsToValidate = ['accountName', 'accountDescription', 'beneficiaryAccount'];
+      if (subStep === 3) fieldsToValidate = ['accountName', 'accountDescription', 'beneficiaryAccount', 'beneficiaryBankCode', 'withdrawalPin'];
     }
     
     const isValid = await trigger(fieldsToValidate);
@@ -159,10 +160,33 @@ const Register = () => {
           setSubStep(subStep + 1);
         } else {
           setIsLoading(true);
-          setTimeout(() => {
-            setIsLoading(false);
+          try {
+            const formData = watch();
+            
+            const payload = {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              middle_name: formData.middleName || "",
+              mobile_num: formData.mobileNumber,
+              dob: formData.dob,
+              email: formData.kycEmail || formData.email,
+              bvn: formData.bvn,
+              gender: formData.gender === "Male" ? "1" : "2", // Adjust gender format if needed by API
+              address: formData.address,
+              beneficiary_account: formData.beneficiaryAccount || "0000000000",
+              beneficiary_bank_code: formData.beneficiaryBankCode || "058", // Default to GTB if not provided
+              withdrawal_pin: formData.withdrawalPin || "1234"
+            };
+
+            await createVirtualAccount(payload);
+            toast.success('Virtual account created successfully!');
             setStep(4);
-          }, 1500);
+          } catch (error) {
+            console.error('Virtual Account Creation Error:', error.response?.data || error.message);
+            toast.error(error.response?.data?.message || 'Failed to create virtual account. Please try again.');
+          } finally {
+            setIsLoading(false);
+          }
         }
       } else if (step === 4) {
         setStep(5);
@@ -682,9 +706,33 @@ const Register = () => {
                           </div>
                         </div>
                         <div className="pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                           <div className="bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800">
-                             <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Settlement Bank Account (Optional)</label>
-                             <input {...register('beneficiaryAccount')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="Account Number" />
+                           <div className="bg-zinc-50 dark:bg-zinc-900/50 p-3 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-800 space-y-3">
+                             <div className="grid grid-cols-2 gap-3">
+                               <div>
+                                 <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Settlement Bank Account (Optional)</label>
+                                 <input {...register('beneficiaryAccount')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="Account Number" />
+                               </div>
+                               <div>
+                                 <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Bank Code (Optional)</label>
+                                 <input {...register('beneficiaryBankCode')} className="app-input bg-white dark:bg-zinc-950 text-sm" placeholder="e.g. 058 (GTB)" />
+                               </div>
+                             </div>
+                             <div>
+                               <label className="text-[9px] font-bold text-zinc-500 uppercase mb-1 block">Withdrawal PIN (4 digits)</label>
+                               <input 
+                                 {...register('withdrawalPin', { 
+                                   required: 'Withdrawal PIN is required',
+                                   minLength: { value: 4, message: 'Must be 4 digits' },
+                                   maxLength: { value: 4, message: 'Must be 4 digits' },
+                                   pattern: { value: /^[0-9]+$/, message: 'Only numbers allowed' }
+                                 })} 
+                                 type="password"
+                                 className="app-input bg-white dark:bg-zinc-950 text-center tracking-[0.5em] text-lg py-2" 
+                                 placeholder="••••" 
+                                 maxLength={4}
+                               />
+                               {errors.withdrawalPin && <p className="text-red-500 text-[9px] mt-0.5">{errors.withdrawalPin.message}</p>}
+                             </div>
                            </div>
                         </div>
                       </div>

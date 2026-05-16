@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Modal from '../../../components/ui/Modal';
 import { Building2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { updateVirtualAccount } from '../../../api/accountApi';
 
 const UpdateAccountModal = ({ isOpen, onClose, account, onUpdate }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,16 +26,20 @@ const UpdateAccountModal = ({ isOpen, onClose, account, onUpdate }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await updateVirtualAccount(account.id || account._id, formData);
       onUpdate({ ...account, ...formData });
       toast.success('Virtual account updated successfully!');
       onClose();
-    }, 1000);
+    } catch (error) {
+      console.error('Update Account Error:', error.response?.data || error.message);
+      toast.error(error.response?.data?.message || 'Failed to update virtual account. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

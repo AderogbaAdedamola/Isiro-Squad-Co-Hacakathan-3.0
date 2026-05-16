@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Modal from '../../../components/ui/Modal';
 import { ArrowUpRight, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { withdrawFunds } from '../../../api/accountApi';
 
 const WithdrawModal = ({ isOpen, onClose, account }) => {
   const [amount, setAmount] = useState('');
@@ -9,7 +10,7 @@ const WithdrawModal = ({ isOpen, onClose, account }) => {
   const [beneficiary, setBeneficiary] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (parseFloat(amount) > account?.balance) {
@@ -18,12 +19,19 @@ const WithdrawModal = ({ isOpen, onClose, account }) => {
     }
 
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await withdrawFunds({
+        amount: parseFloat(amount),
+        pin: pin
+      });
       toast.success('Withdrawal initiated successfully!');
       onClose();
-    }, 2000);
+    } catch (error) {
+      console.error('Withdrawal Error:', error.response?.data || error.message);
+      toast.error(error.response?.data?.message || 'Withdrawal failed. Please check your PIN and balance.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

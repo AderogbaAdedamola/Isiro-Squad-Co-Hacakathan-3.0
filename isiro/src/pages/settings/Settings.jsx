@@ -1,18 +1,6 @@
-import { User, Shield, Bell, CreditCard, HelpCircle, LogOut } from 'lucide-react';
-import { useAuthStore } from '../../store/authStore';
-import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
+import { User, Shield, Bell, CreditCard, HelpCircle } from 'lucide-react';
 
 const Settings = () => {
-  const logout = useAuthStore(state => state.logout);
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    toast.success('Logged out successfully');
-    navigate('/login');
-  };
-
   const sections = [
     {
       title: 'Account Settings',
@@ -60,14 +48,6 @@ const Settings = () => {
           </div>
         ))}
 
-        <div className="pt-6 border-t border-zinc-200 dark:border-zinc-800">
-          <button 
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-red-500 font-bold hover:bg-red-50 dark:hover:bg-red-500/10 px-4 py-3 rounded-xl transition-colors w-full"
-          >
-            <LogOut size={20} /> Sign Out
-          </button>
-        </div>
       </div>
     </div>
   );

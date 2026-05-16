@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Copy, Check, Building2, MoreHorizontal, ArrowUpRight, Lock, Edit2, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { deleteVirtualAccount } from '../../api/accountApi';
 
 import CreateAccountModal from './components/CreateAccountModal';
 import WithdrawModal from './components/WithdrawModal';
@@ -24,10 +25,16 @@ const VirtualAccounts = () => {
   const [selectedPinAccount, setSelectedPinAccount] = useState(null);
   const [selectedEditAccount, setSelectedEditAccount] = useState(null);
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this virtual account?")) {
-      setAccounts(accounts.filter(acc => acc.id !== id));
-      toast.success("Account deleted successfully");
+      try {
+        await deleteVirtualAccount(id);
+        setAccounts(accounts.filter(acc => acc.id !== id));
+        toast.success("Account deleted successfully");
+      } catch (error) {
+        console.error('Delete Account Error:', error.response?.data || error.message);
+        toast.error(error.response?.data?.message || 'Failed to delete account.');
+      }
     }
   };
 

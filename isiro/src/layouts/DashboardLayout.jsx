@@ -5,6 +5,9 @@ import { LayoutDashboard, Package, ListRestart, BellRing, PieChart, Activity, Me
 import { useAuthStore } from '../store/authStore';
 import logo from '../assets/isiro_logo_fav.png';
 
+import { logoutUser } from '../api/authApi';
+import toast from 'react-hot-toast';
+
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
@@ -12,9 +15,17 @@ const DashboardLayout = () => {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      toast.success('Logged out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if API fails, clear local state
+    } finally {
+      logout();
+      navigate('/login');
+    }
   };
 
   const displayName = user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';

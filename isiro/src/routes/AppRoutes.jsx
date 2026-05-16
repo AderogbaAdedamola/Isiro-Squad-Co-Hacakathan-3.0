@@ -7,6 +7,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import LandingPage from '../pages/LandingPage';
 import Login from '../pages/auth/Login';
 import Register from '../pages/auth/Register';
+import ForgotPassword from '../pages/auth/ForgotPassword';
 import DashboardOverview from '../pages/dashboard/DashboardOverview';
 import Inventory from '../pages/inventory/Inventory';
 import Transactions from '../pages/transactions/Transactions';
@@ -26,6 +27,7 @@ const AppRoutes = () => {
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Route>
 
       {/* Dashboard Routes — TODO: Wrap with <ProtectedRoute> after debugging */}
