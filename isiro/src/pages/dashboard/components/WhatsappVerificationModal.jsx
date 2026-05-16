@@ -1,29 +1,38 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MessageCircle, Loader2, CheckCircle2, Phone, ArrowRight } from 'lucide-react';
+import { X, MessageCircle, Loader2, CheckCircle2, Phone, ArrowRight, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
+import { getWhatsappVerification } from '../../../api/authApi';
 
 const WhatsappVerificationModal = ({ isOpen, onClose }) => {
   const { isWhatsappVerified, whatsappNumber, verifyWhatsapp, updateWhatsapp } = useAuthStore();
   const [number, setNumber] = useState(whatsappNumber || '');
   const [isLoading, setIsLoading] = useState(false);
+  const [whatsappData, setWhatsappData] = useState({ code: '', link: '' });
   const [step, setStep] = useState(isWhatsappVerified ? 'verified' : 'input');
 
   const handleVerify = async () => {
-    if (!number || number.length < 10) {
-      toast.error('Please enter a valid WhatsApp number');
-      return;
-    }
-
     setIsLoading(true);
-    // Simulate WhatsApp OTP send and verify
-    setTimeout(() => {
+    try {
+      const response = await getWhatsappVerification();
+      setWhatsappData({
+        code: response.data?.code,
+        link: response.data?.whatsappLink
+      });
+      
+      if (response.data?.whatsappLink) {
+        window.open(response.data.whatsappLink, '_blank');
+      }
+      
+      setStep('link-ready');
+      toast.success('Verification link generated!');
+    } catch (error) {
+      console.error('WhatsApp Verification Error:', error.response?.data || error.message);
+      toast.error('Failed to generate verification link.');
+    } finally {
       setIsLoading(false);
-      verifyWhatsapp(number);
-      setStep('verified');
-      toast.success('WhatsApp number verified!');
-    }, 2000);
+    }
   };
 
   const handleChangeNumber = () => {
@@ -70,19 +79,8 @@ const WhatsappVerificationModal = ({ isOpen, onClose }) => {
               >
                 <div className="text-center">
                   <p className="text-zinc-500 dark:text-zinc-400">
-                    Verify your WhatsApp number to receive real-time sales alerts and customer messages.
+                    Verify your business by connecting your WhatsApp account. Click below to generate your unique verification link.
                   </p>
-                </div>
-
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={18} />
-                  <input 
-                    type="tel"
-                    value={number}
-                    onChange={(e) => setNumber(e.target.value)}
-                    placeholder="WhatsApp Number (e.g. +234...)"
-                    className="w-full pl-12 pr-4 py-4 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl focus:ring-2 focus:ring-emerald-500 outline-none transition-all font-medium"
-                  />
                 </div>
 
                 <button 
@@ -91,8 +89,45 @@ const WhatsappVerificationModal = ({ isOpen, onClose }) => {
                   className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all active:scale-95 disabled:opacity-50"
                 >
                   {isLoading ? <Loader2 className="animate-spin" /> : (
-                    <>Send Verification Code <ArrowRight size={20} /></>
+                    <>Generate Verification Link <ArrowRight size={20} /></>
                   )}
+                </button>
+              </motion.div>
+            ) : step === 'link-ready' ? (
+              <motion.div 
+                key="link-ready"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-6"
+              >
+                <div className="bg-emerald-50 dark:bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-6 text-center space-y-4">
+                  <div>
+                    <p className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-1">Your Verification Code</p>
+                    <p className="text-3xl font-black tracking-tighter text-zinc-900 dark:text-white">
+                      {whatsappData.code || '...'}
+                    </p>
+                  </div>
+                  
+                  <button 
+                    onClick={() => window.open(whatsappData.link, '_blank')}
+                    className="w-full py-3 bg-[#25D366] hover:bg-[#20ba5a] text-white rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <MessageCircle size={18} /> Open WhatsApp Again
+                  </button>
+                </div>
+
+                <div className="text-center">
+                  <p className="text-xs text-zinc-500 italic">
+                    Once you send the message in WhatsApp, your account will be verified automatically.
+                  </p>
+                </div>
+
+                <button 
+                  onClick={onClose}
+                  className="w-full py-4 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white rounded-2xl font-bold transition-all hover:opacity-90"
+                >
+                  Close & Refresh Later
                 </button>
               </motion.div>
             ) : (

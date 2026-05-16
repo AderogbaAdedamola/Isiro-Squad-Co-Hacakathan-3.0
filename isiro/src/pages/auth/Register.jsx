@@ -192,31 +192,30 @@ const Register = () => {
           }
         }
       } else if (step === 4) {
-        setStep(5);
+        setIsLoading(true);
+        try {
+          const response = await getWhatsappVerification();
+          setWhatsappData({
+            code: response.data?.code,
+            link: response.data?.whatsappLink
+          });
+          setStep(5);
+        } catch (error) {
+          console.error('WhatsApp Verification Error:', error.response?.data || error.message);
+          toast.error('Failed to generate verification link. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
   };
 
-  const handleWhatsAppClick = async () => {
-    setIsLoading(true);
-    try {
-      const response = await getWhatsappVerification();
-      
-      setWhatsappData({
-        code: response.data?.code,
-        link: response.data?.whatsappLink
-      });
-
-      if (response.data?.whatsappLink) {
-        window.open(response.data.whatsappLink, '_blank');
-      }
-
+  const handleWhatsAppClick = () => {
+    if (whatsappData.link) {
+      window.open(whatsappData.link, '_blank');
       setTimeout(() => onSubmit(watch()), 2000);
-    } catch (error) {
-      console.error('WhatsApp Verification Error:', error.response?.data || error.message);
-      toast.error('Failed to connect to WhatsApp service. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      toast.error('Verification link not ready. Please try again.');
     }
   };
 
