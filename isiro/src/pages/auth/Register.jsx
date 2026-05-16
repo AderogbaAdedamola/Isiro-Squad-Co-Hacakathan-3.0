@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../../api/axios';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -7,7 +8,10 @@ import { Loader2, ArrowRight, ArrowLeft, Mail, Phone, Lock, User, Briefcase, Bar
 import { useAuthStore } from '../../store/authStore';
 
 const Register = () => {
-  const [step, setStep] = useState(1);
+  const currentOnboardingStep = useAuthStore(state => state.currentOnboardingStep);
+  const user = useAuthStore(state => state.user);
+  
+  const [step, setStep] = useState(currentOnboardingStep || 1);
   const [subStep, setSubStep] = useState(1); // For Step 3 sub-navigation
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -18,16 +22,17 @@ const Register = () => {
     setOnboardingStep(step);
   }, [step, setOnboardingStep]);
   
-  const { register, handleSubmit, trigger, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, trigger, watch, setValue, reset, formState: { errors } } = useForm({
     defaultValues: {
       fullName: '',
-      email: '',
+      email: user?.email || '',
       password: '',
-      phone: '',
-      businessName: '',
-      category: '',
-      revenue: '',
+      phone: user?.phoneNumber || '',
+      businessName: user?.businessName || '',
+      category: user?.businessCategory || '',
+      revenue: user?.targetMonthlyRevenue ? `₦${user.targetMonthlyRevenue.toLocaleString()}` : '',
       otp: '',
+      // ... existing fields
       // Screen 3 Fields
       accountName: '',
       accountDescription: '',
@@ -68,20 +73,87 @@ const Register = () => {
     if (isValid) {
       if (step === 1) {
         setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-          toast.success('Verification code sent to your email!');
+        try {
+          const payload = {
+            name: watch('fullName'),
+            email: watch('email'),
+            phoneNumber: watch('phone'),
+            password: watch('password')
+          };
+          
+          console.log('Sending Registration Payload:', payload);
+
+          const response = await api.post('/users/register', payload);
+          
+          toast.success(response.data?.message || 'Verification code sent to your email!');
           setStep(1.5);
-        }, 1500);
+        } catch (error) {
+          console.error('Registration Error:', error.response?.data || error.message);
+          toast.error('Something went wrong. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
       } else if (step === 1.5) {
         setIsLoading(true);
-        setTimeout(() => {
-          setIsLoading(false);
-          toast.success('Email verified successfully!');
+        try {
+          const payload = {
+            email: watch('email'),
+            otp: watch('otp')
+          };
+
+          const response = await api.post('/users/verify-email', payload);
+          
+          toast.success(response.data?.message || 'Email verified successfully!');
+
+          // Auto-login after verification to establish session cookies/token
+          try {
+            const loginResponse = await api.post('/users/login', {
+              email: watch('email'),
+              password: watch('password')
+            });
+            const user = loginResponse.data.user;
+            loginStore(user, loginResponse.data.token || null);
+          } catch (loginErr) {
+            console.error('Auto-login after verify failed:', loginErr.response?.data || loginErr.message);
+          }
+
           setStep(2);
-        }, 1000);
+        } catch (error) {
+          console.error('Verification Error:', error.response?.data || error.message);
+          toast.error('Verification failed. Please try again.');
+        } finally {
+          setIsLoading(false);
+        }
       } else if (step === 2) {
-        setStep(3);
+        setIsLoading(true);
+        try {
+          const revenueStr = watch('revenue');
+          const nums = revenueStr.replace(/[,₦]/g, '').match(/\d+/g);
+          const highestRevenue = nums ? Math.max(...nums.map(Number)) : 0;
+
+          const currentToken = localStorage.getItem('token');
+          console.log('🔑 Token present:', !!currentToken, currentToken ? `${currentToken.substring(0, 20)}...` : 'NONE');
+
+          await api.post('/users/update-business-details', {
+            businessName: watch('businessName'),
+            businessCategory: watch('category'),
+            targetMonthlyRevenue: highestRevenue
+          });
+          
+          toast.success('Business details updated!');
+          setStep(3);
+        } catch (error) {
+          console.error('Business Update Error:', error.response?.data || error.message);
+          console.error('Response Status:', error.response?.status);
+          // If the interceptor couldn't refresh the token, ask user to re-login
+          if (error.response?.status === 401 || error.response?.status === 403) {
+            toast.error('Session expired. Please log in again to continue.');
+          } else {
+            toast.error('Something went wrong. Please try again.');
+          }
+        } finally {
+          setIsLoading(false);
+        }
       } else if (step === 3) {
         if (subStep < 3) {
           setSubStep(subStep + 1);
@@ -95,6 +167,30 @@ const Register = () => {
       } else if (step === 4) {
         setStep(5);
       }
+    }
+  };
+
+  const resendOtp = async () => {
+    const email = watch('email');
+    if (!email) {
+      toast.error('Email not found. Please go back to the first step.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await api.post('/users/register', {
+        name: watch('fullName'),
+        email: watch('email'),
+        phoneNumber: watch('phone'),
+        password: watch('password')
+      });
+      toast.success(response.data?.message || 'New code sent to your email!');
+    } catch (error) {
+      console.error('Resend OTP Error:', error.response?.data || error.message);
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -197,10 +293,13 @@ const Register = () => {
               <div className="relative group">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
                 <input 
-                  {...register('fullName', { required: 'Full name is required' })}
+                  {...register('fullName', { 
+                    required: 'Full name is required',
+                    validate: value => value.trim().split(' ').length >= 2 || 'Please enter both first and last name'
+                  })}
                   type="text" 
-                  className="app-input pl-10"
                   placeholder="Full Name"
+                  className="app-input pl-10"
                 />
                 {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName.message}</p>}
               </div>
@@ -222,10 +321,14 @@ const Register = () => {
               <div className="relative group">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-emerald-500 transition-colors" size={18} />
                 <input 
-                  {...register('phone', { required: 'Phone number is required' })}
+                  {...register('phone', { 
+                    required: 'Phone number is required',
+                    pattern: { value: /^[0-9]+$/, message: 'Only numbers allowed' },
+                    minLength: { value: 10, message: 'Too short' }
+                  })}
                   type="tel" 
                   className="app-input pl-10"
-                  placeholder="Phone Number"
+                  placeholder="Phone Number (e.g. 08012345678)"
                 />
                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone.message}</p>}
               </div>
@@ -274,7 +377,7 @@ const Register = () => {
               </div>
               <h2 className="text-xl font-extrabold tracking-tight mb-1">Verify Email</h2>
               <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                Enter the code sent to <span className="font-semibold text-zinc-900 dark:text-white">{watch('email')}</span>
+                Enter the 6-digit code sent to <span className="font-semibold text-zinc-900 dark:text-white">{watch('email')}</span>
               </p>
             </div>
 
@@ -286,13 +389,20 @@ const Register = () => {
                 })}
                 type="text" 
                 maxLength="6"
-                className="w-full text-center text-2xl font-bold tracking-[0.75rem] py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition-shadow"
+                className="w-full text-center text-2xl font-bold tracking-[0.5rem] py-3.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition-shadow"
                 placeholder="000000"
               />
               {errors.otp && <p className="text-red-500 text-xs text-center mt-1">{errors.otp.message}</p>}
               
               <p className="text-center text-sm text-zinc-500">
-                Didn't receive the code? <button type="button" className="text-emerald-500 font-medium hover:underline transition-all">Resend OTP</button>
+                Didn't receive the code? <button 
+                  type="button" 
+                  onClick={resendOtp}
+                  disabled={isLoading}
+                  className="text-emerald-500 font-medium hover:underline transition-all disabled:opacity-50"
+                >
+                  {isLoading ? 'Sending...' : 'Resend OTP'}
+                </button>
               </p>
             </div>
 

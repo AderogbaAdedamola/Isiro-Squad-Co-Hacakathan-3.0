@@ -1,12 +1,24 @@
 import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ui/ThemeToggle';
-import { LayoutDashboard, Package, ListRestart, BellRing, PieChart, Activity, Menu, X, Receipt, Wallet } from 'lucide-react';
+import { LayoutDashboard, Package, ListRestart, BellRing, PieChart, Activity, Menu, X, Receipt, Wallet, LogOut } from 'lucide-react';
+import { useAuthStore } from '../store/authStore';
 import logo from '../assets/isiro_logo_fav.png';
 
 const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const displayName = user?.firstName || user?.name || user?.email?.split('@')[0] || 'User';
+  const userInitial = displayName.charAt(0).toUpperCase();
   const isActive = (path) => location.pathname === path || location.pathname.startsWith(path + '/');
 
   const navItems = [
@@ -60,8 +72,18 @@ const DashboardLayout = () => {
           })}
         </nav>
 
-        <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-4">
-          <ThemeToggle />
+        <div className="mt-auto pt-4 border-t border-zinc-200 dark:border-zinc-800 space-y-3">
+          <div className="flex items-center justify-between">
+            <ThemeToggle />
+            <button
+              onClick={handleLogout}
+              title="Sign Out"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all duration-200 cursor-pointer"
+            >
+              <LogOut size={16} />
+              <span className="text-xs">Logout</span>
+            </button>
+          </div>
           
           {/* User Profile Snippet */}
           <Link to="/dashboard/settings" className="flex items-center gap-3 px-4 py-3 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-800 cursor-pointer transition-colors">

@@ -10,17 +10,37 @@ const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const setOnboardingStep = useAuthStore(state => state.setOnboardingStep);
   const loginStore = useAuthStore(state => state.login);
 
   const onSubmit = async (data) => {
     setIsLoading(true);
+    const payload = {
+      email: String(data.email).trim(),
+      password: String(data.password)
+    };
     try {
-      const response = await login(data);
-      loginStore(response.data.user, response.data.token);
+      const response = await login(payload);
+      const user = response.data.user;
+      
+      // Save user to store
+      loginStore(user, response.data.token || null);
+      
       toast.success('Welcome back!');
-      navigate('/dashboard');
+
+      // Redirection Logic based on onboarding progress
+      if (!user.businessName || !user.businessCategory) {
+        setOnboardingStep(2);
+        navigate('/register');
+      } else if (!user.virtualAccount) { 
+        setOnboardingStep(3);
+        navigate('/register');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
-      toast.error('Failed to login. Please try again.');
+      console.error('Login Error:', error.response?.data || error.message);
+      toast.error('Invalid email or password. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -35,14 +55,17 @@ const Login = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Email or Phone</label>
+          <label className="block text-sm font-medium mb-1.5 text-zinc-700 dark:text-zinc-300">Email Address</label>
           <input 
-            {...register('identifier', { required: 'This field is required' })}
-            type="text" 
+            {...register('email', { 
+              required: 'Email is required',
+              pattern: { value: /^\S+@\S+$/i, message: 'Invalid email address' }
+            })}
+            type="email" 
             className="app-input"
-            placeholder="e.g. 08012345678"
+            placeholder="e.g. name@example.com"
           />
-          {errors.identifier && <span className="text-red-500 text-xs mt-1">{errors.identifier.message}</span>}
+          {errors.email && <span className="text-red-500 text-xs mt-1">{errors.email.message}</span>}
         </div>
 
         <div>

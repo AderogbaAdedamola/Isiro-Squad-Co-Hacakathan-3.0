@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import AuthLayout from '../layouts/AuthLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
+// import ProtectedRoute from '../components/auth/ProtectedRoute'; // TODO: Enable after debugging
 
 // Pages
 import LandingPage from '../pages/LandingPage';
@@ -27,7 +28,7 @@ const AppRoutes = () => {
         <Route path="/register" element={<Register />} />
       </Route>
 
-      {/* Dashboard Routes */}
+      {/* Dashboard Routes — TODO: Wrap with <ProtectedRoute> after debugging */}
       <Route path="/dashboard" element={<DashboardLayout />}>
         <Route index element={<DashboardOverview />} />
         <Route path="inventory" element={<Inventory />} />

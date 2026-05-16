@@ -1,10 +1,15 @@
 import { apiClient } from './axios';
 
-// Placeholder Auth APIs
+// Auth APIs
 export const login = async (credentials) => {
-  return new Promise((resolve) => setTimeout(() => resolve({ data: { token: 'fake-jwt-token', user: { name: 'Demo Trader' } } }), 800));
+  return apiClient.post('/users/login', credentials);
 };
 
 export const register = async (userData) => {
-  return new Promise((resolve) => setTimeout(() => resolve({ data: { message: 'Success' } }), 800));
+  return apiClient.post('/users/register', userData);
+};
+
+// Renew access token using refresh token (cookie-based)
+export const renewToken = async () => {
+  return apiClient.post('/users/renew-token');
 };
